@@ -1,0 +1,24 @@
+[project]
+name = "balatro-engine"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "jayceslesar", email = "jaycesles@gmail.com"},
+]
+dependencies = []
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm.scripts]
+lint.shell = "ruff format && ruff check --fix && mypy ."
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.12.2",
+    "mypy>=1.16.1",
+    "pytest>=8.4.1",
+]
+[tool.pdm]
+distribution = false
