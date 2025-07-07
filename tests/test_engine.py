@@ -208,3 +208,7 @@ def test_seal_discard(seal: Seal, expected_action: str | None) -> None:
 def test_seal_final_hand(seal: Seal, expected_action: str | None) -> None:
     """Test seal final_hand."""
     assert Seal.final_hand(seal) == expected_action
+
+
+def my_failing_test() -> None:
+    assert False
