@@ -210,5 +210,5 @@ def test_seal_final_hand(seal: Seal, expected_action: str | None) -> None:
     assert Seal.final_hand(seal) == expected_action
 
 
-def my_failing_test() -> None:
+def test_my_failing_test() -> None:
     assert False
