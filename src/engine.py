@@ -1,13 +1,81 @@
 """Joker module."""
 
-from typing import Optional
-from abc import abstractmethod
-from enum import Enum
 import random
+from abc import abstractmethod
+from enum import Enum, auto
 
 RETRIGGER = "retrigger"
 GENERATE_PLANET = "generate_planet"
 GENERATE_TAROT = "generate_tarot"
+
+
+class Rank(int, Enum):
+    """Enumeration for card ranks."""
+
+    TWO = 2
+    THREE = 3
+    FOUR = 4
+    FIVE = 5
+    SIX = 6
+    SEVEN = 7
+    EIGHT = 8
+    NINE = 9
+    TEN = 10
+    JACK = 11
+    QUEEN = 12
+    KING = 13
+    ACE = 14
+
+
+class Suit(int, Enum):
+    """Enumeration for card suits."""
+
+    DIAMONDS = auto()
+    CLUBS = auto()
+    HEARTS = auto()
+    SPADES = auto()
+
+
+class HandType(int, Enum):
+    """Enumeration for hand types."""
+
+    HIGH_CARD = auto()
+    PAIR = auto()
+    TWO_PAIR = auto()
+    THREE_OF_A_KIND = auto()
+    STRAIGHT = auto()
+    FLUSH = auto()
+    FULL_HOUSE = auto()
+    FOUR_OF_A_KIND = auto()
+    STRAIGHT_FLUSH = auto()
+    ROYAL_FLUSH = auto()
+    FIVE_OF_A_KIND = auto()
+    FLUSH_HOUSE = auto()
+    FLUSH_FIVE = auto()
+
+
+class Hand:
+    """Hand type for cards."""
+
+    def __init__(
+        self,
+        hand_type: HandType,
+        base_chips: int,
+        base_mult: int,
+        chips_on_level: int,
+        mult_on_level: int,
+    ) -> None:
+        self.hand_type = hand_type
+        self.base_chips = base_chips
+        self.base_mult = base_mult
+        self.chips_on_level = chips_on_level
+        self.mult_on_level = mult_on_level
+        self.level = 1
+
+    def level_hand(self) -> None:
+        self.base_chips += self.chips_on_level
+        self.base_mult += self.mult_on_level
+        self.level += 1
 
 
 class Roller:
@@ -109,9 +177,7 @@ class Enhancement(Playable, Enum):
             return chips, mult, money
 
     @staticmethod
-    def held(
-        enhancement: "Enhancement", chips: int, mult: int | float, money: int
-    ) -> tuple[int, int | float, int]:
+    def held(enhancement: "Enhancement", chips: int, mult: int | float, money: int) -> tuple[int, int | float, int]:
         if enhancement == Enhancement.NONE:
             return chips, mult, money
         elif enhancement == Enhancement.STEEL:
@@ -137,11 +203,10 @@ class Edition(Playable, Enum):
     FOIL = "foil"
     HOLOGRAPHIC = "holographic"
     POLYCHROME = "polychrome"
+    NEGATIVE = "negative"
 
     @staticmethod
-    def play(
-        edition: "Edition", chips: int, mult: int | float, money: int
-    ) -> tuple[int, int | float, int]:
+    def play(edition: "Edition", chips: int, mult: int | float, money: int) -> tuple[int, int | float, int]:
         if edition == Edition.BASE:
             return chips, mult, money
         elif edition == Edition.FOIL:
@@ -154,9 +219,7 @@ class Edition(Playable, Enum):
             return chips, mult, money
 
     @staticmethod
-    def held(
-        edition: "Edition", chips: int, mult: int | float, money: int
-    ) -> tuple[int, int | float, int]:
+    def held(edition: "Edition", chips: int, mult: int | float, money: int) -> tuple[int, int | float, int]:
         return chips, mult, money
 
     @staticmethod
@@ -178,9 +241,7 @@ class Seal(Playable, Enum):
     PURPLE = "purple"
 
     @staticmethod
-    def play(
-        seal: "Seal", chips: int, mult: int | float, money: int
-    ) -> tuple[int, int | float, int]:
+    def play(seal: "Seal", chips: int, mult: int | float, money: int) -> tuple[int, int | float, int]:
         if seal == Seal.NONE:
             return chips, mult, money
         elif seal == Seal.GOLD:
@@ -189,9 +250,7 @@ class Seal(Playable, Enum):
             return chips, mult, money
 
     @staticmethod
-    def held(
-        seal: "Seal", chips: int, mult: int | float, money: int
-    ) -> tuple[int, int | float, int]:
+    def held(seal: "Seal", chips: int, mult: int | float, money: int) -> tuple[int, int | float, int]:
         return chips, mult, money
 
     @staticmethod
@@ -223,20 +282,21 @@ class Card:
 
     def __init__(
         self,
-        suit: str,
-        rank: str,
-        enhancement: Optional[Enhancement] = Enhancement.NONE,
-        edition: Optional[Edition] = Edition.BASE,
-        seal: Optional[Seal] = Seal.NONE,
-        sticker: Optional[Sticker] = Sticker.NONE,
+        suit: Suit,
+        rank: Rank,
+        enhancement: Enhancement | None = Enhancement.NONE,
+        edition: Edition | None = Edition.BASE,
+        seal: Seal | None = Seal.NONE,
     ) -> None:
         """Initialize Card with suit and rank."""
+        if edition == Edition.NEGATIVE:
+            raise ValueError("Negative edition is not allowed for Card.")
+
         self.suit = suit
         self.rank = rank
         self.enhancement = enhancement
         self.edition = edition
         self.seal = seal
-        self.sticker = sticker
         self.debuffed = False
 
         self._chips = int(self.rank)
@@ -256,11 +316,22 @@ class Card:
         return chips, mult, money
 
 
-class Hand:
-    """Hand class to represent a player's hand in the game."""
+class DefaultDeck:
+    """DefaultDeck class to represent a standard deck of cards."""
 
     def __init__(self) -> None:
-        """Initialize Hand with a list of cards."""
+        """Initialize DefaultDeck with a list of cards."""
+        self.cards = [Card(suit=suit, rank=rank) for rank in Rank for suit in Suit]
+
+    @property
+    def num_hands(self) -> int:
+        """Return the number of hands in the deck."""
+        return 3
+
+    @property
+    def num_discards(self) -> int:
+        """Return the number of discards in the deck."""
+        return 3
 
 
 class Joker:
@@ -269,10 +340,10 @@ class Joker:
     def __init__(
         self,
         name: str,
-        edition: Optional[Edition] = Edition.BASE,
-        sticker: Optional[Sticker] = Sticker.NONE,
+        edition: Edition | None = Edition.BASE,
+        sticker: Sticker | None = Sticker.NONE,
     ) -> None:
         """Initialize Joker."""
         self.name = name
-        self.edition: Optional[Edition] = edition
-        self.sticker: Optional[Sticker] = sticker
+        self.edition: Edition | None = edition
+        self.sticker: Sticker | None = sticker

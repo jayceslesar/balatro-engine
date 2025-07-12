@@ -1,8 +1,21 @@
 """Tests for the engine module."""
 
 from unittest.mock import patch
-from src.engine import Roller, Joker, Enhancement, Edition, Seal, GENERATE_TAROT, GENERATE_PLANET
+
 import pytest
+
+from src.engine import (
+    GENERATE_PLANET,
+    GENERATE_TAROT,
+    Card,
+    Edition,
+    Enhancement,
+    Joker,
+    Rank,
+    Roller,
+    Seal,
+    Suit,
+)
 
 
 def test_roller_without_oops_joker() -> None:
@@ -49,13 +62,17 @@ def test_enhancement_play(
     roller = Roller()
     if enhancement == Enhancement.LUCKY:
         with patch.object(roller, "roll", side_effect=[True, True]):
-            assert Enhancement.play(
-                enhancement, chips=1, mult=1, money=1, roller=roller
-            ) == (expected_chips, expected_mult, expected_money)
+            assert Enhancement.play(enhancement, chips=1, mult=1, money=1, roller=roller) == (
+                expected_chips,
+                expected_mult,
+                expected_money,
+            )
     else:
-        assert Enhancement.play(
-            enhancement, chips=1, mult=1, money=1, roller=roller
-        ) == (expected_chips, expected_mult, expected_money)
+        assert Enhancement.play(enhancement, chips=1, mult=1, money=1, roller=roller) == (
+            expected_chips,
+            expected_mult,
+            expected_money,
+        )
 
 
 @pytest.mark.parametrize(
@@ -208,3 +225,9 @@ def test_seal_discard(seal: Seal, expected_action: str | None) -> None:
 def test_seal_final_hand(seal: Seal, expected_action: str | None) -> None:
     """Test seal final_hand."""
     assert Seal.final_hand(seal) == expected_action
+
+
+def test_card_initialization_negative_edition() -> None:
+    """Test Card initialization with negative edition."""
+    with pytest.raises(ValueError, match="Negative edition is not allowed for Card."):
+        Card(suit=Suit.CLUBS, rank=Rank.ACE, edition=Edition.NEGATIVE)

@@ -22,3 +22,17 @@ dev = [
 ]
 [tool.pdm]
 distribution = false
+
+
+[tool.ruff]
+line-length = 120
+
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+]
+ignore = ["E501","E203","B024","B028","UP037", "UP035", "UP006"]
